@@ -2,9 +2,20 @@ from esc_wiki_scraper import get_esc_participants_by_year, get_esc_scores_by_yea
 from esc_supabase_insert import insert_esc_entries, esc_entries_year_check, esc_scores_year_check, insert_esc_real_scores
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 def populate_esc_entries(year: int, header: dict):
     is_year_populated = esc_entries_year_check(year)
+
+    curr_year = datetime.now().year
+
+    if year == curr_year and datetime.now().month < 5:
+        print(f"Full data not retrievable until May for Eurovision {year}")
+        return
+    
+    if year > curr_year:
+        print(f"Eurovision {year} is too far in the future")
+        return
 
     if is_year_populated:
         print(f"Table has already been populated for {year}")
@@ -31,7 +42,11 @@ def populate_esc_real_scores(year: int, header: dict):
         print(f"Scores have already been populated for {year}")
         return
     
-    scoring_data = get_esc_scores_by_year_2023_2025(year, header)
+    if year <= 2025 and year >= 2023:
+        scoring_data = get_esc_scores_by_year_2023_2025(year, header)
+    else:
+        print(f"Scoring data retrieval has not been implemented for {year}")
+        return
     response = insert_esc_real_scores(scoring_data, year)
     return response
     
@@ -50,7 +65,7 @@ if __name__ == "__main__":
     # Change these variables as desired
     year = 2025
     header = {"User-Agent": f"ESCDataRetrieval/1.0 {user_agent}"}
-    table = "esc_real_scores"
+    table = "esc_entries"
 
     match table:
         case "esc_entries":
