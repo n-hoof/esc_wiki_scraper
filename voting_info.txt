@@ -1,0 +1,27 @@
+2026
+semis: jury + televote
+final: jury + televote
+
+2023-2025
+semis: televote
+final: jury + televote
+
+2009-2022
+semis: televote + jury
+final: televote + jury
+
+2003-2008: (2004 is when semis were introduced)
+semis: televote
+final: televote
+
+2001-2002:
+countries could individually choose between televote or tele + jury
+
+1998-2000:
+televote
+
+1997:
+jury with 5 countries using televote
+
+1956-1997:
+jury
