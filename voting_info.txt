@@ -6,9 +6,12 @@ final: jury + televote
 semis: televote
 final: jury + televote
 
-2009-2022
+2010-2022
 semis: televote + jury
 final: televote + jury
+
+2009
+idk weird
 
 2003-2008: (2004 is when semis were introduced)
 semis: televote

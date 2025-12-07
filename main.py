@@ -1,4 +1,4 @@
-from esc_wiki_scraper import get_esc_participants_by_year, get_esc_scores_by_year_2023_2025
+from esc_wiki_scraper import get_esc_participants_by_year, get_esc_scores_by_year_2023_2025, get_esc_scores_by_year_2010_2022
 from esc_supabase_insert import insert_esc_entries, esc_entries_year_check, esc_scores_year_check, insert_esc_real_scores
 import os
 from dotenv import load_dotenv
@@ -44,6 +44,9 @@ def populate_esc_real_scores(year: int, header: dict):
     
     if year <= 2025 and year >= 2023:
         scoring_data = get_esc_scores_by_year_2023_2025(year, header)
+
+    elif year >= 2010 and year <= 2022:
+        scoring_data = get_esc_scores_by_year_2010_2022(year, header)
     else:
         print(f"Scoring data retrieval has not been implemented for {year}")
         return

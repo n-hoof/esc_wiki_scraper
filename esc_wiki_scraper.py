@@ -68,13 +68,14 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
             caption = table.find("caption")
 
             if caption:
-                if "First semi-final of the Eurovision Song Contest" in caption.get_text(strip=True):
+                caption_text = caption.get_text(strip=True).lower()
+                if not semi_1 and "first semi-final of the eurovision song contest" in caption_text:
                     semi_1 = table
-                elif "Second semi-final of the Eurovision Song Contest" in caption.get_text(strip=True):
+                elif not semi_2 and "second semi-final of the eurovision song contest" in caption_text:
                     semi_2 = table
-                elif "Final of the Eurovision Song Contest" in caption.get_text(strip=True):
+                elif not final_ro_place and "final of the eurovision song contest" in caption_text:
                     final_ro_place = table
-                elif "Detailed jury voting results of the final of the Eurovision Song Contest" in caption.get_text(strip=True):
+                elif not final_score and "detailed jury voting results of the final of the eurovision song contest" in caption_text:
                     final_score = table
 
             if semi_1 and semi_2 and final_ro_place and final_score:
@@ -168,10 +169,116 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
         print(f"Scoring data retrieval failed for {year}.")
         return e
 
-# 2009-2022
+# 2010-2022
 # semis = televote + jury
 # final = televote + jury
-def get_esc_scores_by_year_2009_2022(year: int, user_header: dict) -> list:
-    pass  
+def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
+    url = f"https://en.wikipedia.org/api/rest_v1/page/html/Eurovision_Song_Contest_{year}"
+    try:
+        response = requests.get(url, headers=user_header)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        semi_1_ro_place = find_table_pre_2024("Results of the first semi-final of the Eurovision Song Contest", soup)
+        semi_2_ro_place = find_table_pre_2024("Results of the second semi-final of the Eurovision Song Contest", soup)
+        final_ro_place = find_table_pre_2024("Results of the final of the Eurovision Song Contest", soup)
+        semi_1_score = find_table_pre_2024("Split results of semi-final 1", soup)
+        semi_2_score = find_table_pre_2024("Split results of semi-final 2", soup)
+        final_score = find_table_pre_2024("Split results of the final", soup)
+
+        scoring_data = defaultdict(list)
+
+        for tr in semi_1_ro_place.find_all("tr")[2:]:
+            th = tr.find("th")
+            tds = tr.find_all("td")
+
+            run_order = th.get_text(strip=True)
+            run_order = int(run_order) if run_order.isnumeric() else None
+
+            country = tds[0].get_text(strip=True)
+
+            place = tds[4].get_text(strip=True)
+            place = int(place) if place.isnumeric() else None
+
+            scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
+
+        for tr in semi_2_ro_place.find_all("tr")[2:]:
+            th = tr.find("th")
+            tds = tr.find_all("td")
+
+            run_order = th.get_text(strip=True)
+            run_order = int(run_order) if run_order.isnumeric() else None
+
+            country = tds[0].get_text(strip=True)
+
+            place = tds[4].get_text(strip=True)
+            place = int(place) if place.isnumeric() else None
+
+            scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
+
+        for tr in semi_1_score.find_all("tr")[3:]:
+            tds = tr.find_all("td")
+
+            country_jury = tds[2].get_text(strip=True)
+            jury = tds[3].get_text(strip=True)
+
+            country_tele = tds[4].get_text(strip=True)
+            tele = tds[5].get_text(strip=True)
+
+            scoring_data[country_jury][0]["jury"] = jury
+            scoring_data[country_tele][0]["televote"] = tele
+
+        for tr in semi_2_score.find_all("tr")[3:]:
+            tds = tr.find_all("td")
+
+            country_jury = tds[2].get_text(strip=True)
+            jury = tds[3].get_text(strip=True)
+
+            country_tele = tds[4].get_text(strip=True)
+            tele = tds[5].get_text(strip=True)
+
+            scoring_data[country_jury][0]["jury"] = jury
+            scoring_data[country_tele][0]["televote"] = tele
+
+        for tr in final_ro_place.find_all("tr")[2:]:
+            th = tr.find("th")
+            tds = tr.find_all("td")
+
+            run_order = th.get_text(strip=True)
+            run_order = int(run_order) if run_order.isnumeric() else None
+
+            country = tds[0].get_text(strip=True)
+
+            place = tds[4].get_text(strip=True)
+            place = int(place) if place.isnumeric() else None
+
+            scoring_data[country].append({"is_final": True, "place": place, "running_order": run_order})
+
+        for tr in final_score.find_all("tr")[3:]:
+            tds = tr.find_all("td")
+
+            country_jury = tds[2].get_text(strip=True)
+            jury = tds[3].get_text(strip=True)
+
+            country_tele = tds[4].get_text(strip=True)
+            tele = tds[5].get_text(strip=True)
+
+            scoring_data[country_jury][-1]["jury"] = jury
+            scoring_data[country_tele][-1]["televote"] = tele
+
+        return scoring_data
+        
+
+    except Exception as e:
+        print(f"Scoring data retrieval failed for {year}.")
+        return e
 
 
+def find_table_pre_2024(table_caption: str, soup: BeautifulSoup):
+    for table in soup.find_all("table"):
+        caption = table.find("caption")
+
+        if caption and table_caption in caption.get_text(strip=True):
+            return table
+    
+    raise ValueError(f"{table_caption} TABLE NOT FOUND")
