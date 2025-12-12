@@ -30,7 +30,7 @@ def populate_pze_entries(year: int, header: dict):
     print("Not yet implemented")
     pass
 
-#TODO: Implement
+
 def populate_esc_real_scores(year: int, header: dict):
     is_entries_year_populated = esc_entries_year_check(year)
     if not is_entries_year_populated:
@@ -38,6 +38,7 @@ def populate_esc_real_scores(year: int, header: dict):
         return
     
     is_scores_year_populated = esc_scores_year_check(year)
+    print(is_scores_year_populated)
     if is_scores_year_populated:
         print(f"Scores have already been populated for {year}")
         return
@@ -66,9 +67,9 @@ if __name__ == "__main__":
     user_agent: str = os.getenv("USER_AGENT")
 
     # Change these variables as desired
-    year = 2025
+    year = 2023
     header = {"User-Agent": f"ESCDataRetrieval/1.0 {user_agent}"}
-    table = "esc_entries"
+    table = "esc_real_scores"
 
     match table:
         case "esc_entries":
