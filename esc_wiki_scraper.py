@@ -271,7 +271,6 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
 
     except Exception as e:
         print(f"Scoring data retrieval failed for {year}.")
-        print(e)
         return e
 
 
