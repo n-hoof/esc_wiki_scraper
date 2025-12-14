@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from populate import populate
+from esc_supabase_insert import fetch_country_ids
 
 import time
 
@@ -8,10 +9,11 @@ load_dotenv()
 user_agent: str = os.getenv("USER_AGENT")
 header = {"User-Agent": f"ESCDataRetrieval/1.0 {user_agent}"}
 table = "esc_entries"
+country_ids = fetch_country_ids()
 
-for year in range(2009, 2016):
+for year in range(2000, 2025):
     try:
-        response = populate(year, table, header)
+        response = populate(year, table, header, country_ids)
         print(response)
         time.sleep(10)
     except Exception as e:

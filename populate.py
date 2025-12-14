@@ -2,7 +2,7 @@ from esc_wiki_scraper import get_esc_participants_by_year, get_esc_scores_by_yea
 from esc_supabase_insert import insert_esc_entries, esc_entries_year_check, esc_scores_year_check, insert_esc_real_scores
 from datetime import datetime
 
-def populate_esc_entries(year: int, header: dict):
+def populate_esc_entries(year: int, header: dict, country_ids: dict):
     is_year_populated = esc_entries_year_check(year)
 
     curr_year = datetime.now().year
@@ -20,16 +20,16 @@ def populate_esc_entries(year: int, header: dict):
         return
 
     esc_entry_data = get_esc_participants_by_year(year, header)
-    response = insert_esc_entries(esc_entry_data)
+    response = insert_esc_entries(esc_entry_data, country_ids)
     return response
 
 #TODO: Implement
-def populate_pze_entries(year: int, header: dict):
+def populate_pze_entries():
     print("Not yet implemented")
     pass
 
 
-def populate_esc_real_scores(year: int, header: dict):
+def populate_esc_real_scores(year: int, header: dict, country_ids: dict):
     is_entries_year_populated = esc_entries_year_check(year)
     if not is_entries_year_populated:
         print(f"Entries have not been populated for {year}")
@@ -48,7 +48,7 @@ def populate_esc_real_scores(year: int, header: dict):
     else:
         print(f"Scoring data retrieval has not been implemented for {year}")
         return
-    response = insert_esc_real_scores(scoring_data, year)
+    response = insert_esc_real_scores(scoring_data, year, country_ids)
     return response
 
 #TODO: Implement
@@ -56,15 +56,15 @@ def populate_pze_real_scores():
     print("Not yet implemented")
     pass
 
-def populate(year: int, table: str, header: dict):
+def populate(year: int, table: str, header: dict, country_ids: dict):
     response = None
     
     match table:
         case "esc_entries":
-            response = populate_esc_entries(year, header)
+            response = populate_esc_entries(year, header, country_ids)
 
         case "esc_real_scores":
-            response = populate_esc_real_scores(year, header)
+            response = populate_esc_real_scores(year, header, country_ids)
 
         case "pze_entries":
             populate_pze_entries(year, header)
