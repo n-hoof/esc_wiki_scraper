@@ -33,16 +33,15 @@ def get_esc_participants_by_year(year: int, user_header: dict) -> list:
                 if not th or len(tds) < 5:
                     continue
 
-                country = th.get_text(strip=True)
-                artist = tds[1].get_text(strip=True)
-                song = tds[2].get_text(strip=True)
+                country = clean_text(th.get_text(strip=True))
+                artist = extract_text(tds[1])
+                song = clean_text(tds[2].get_text(strip=True))
                 rows.append({"country": country, "year": year, "artist": artist, "song_title": song.replace('"', '')})
 
         return rows
 
     except Exception as e:
-        print(f"Participant retrieval failed for {year}.")
-        return e
+        raise ValueError(f"Participant retrieval failed for {year}.\n{e}")
 
 # 2026-?
 # semis = jury + televote
@@ -279,6 +278,34 @@ def clean_num(text: str) -> int | None:
     text = text.strip()
     return int(text) if text.isnumeric() else None
 
+# removes and footnotes and ensures proper spacing with bracketed non-latin songtitles
 def clean_text(text: str) -> str:
     text = re.sub(r"\[[^\]]*\]", "", text)  # remove [h], [a], etc.
+
+    # Ensure spacing before parentheses (e.g. Mila (Мила) instead of Mila(Мила))
+    text = re.sub(r"\s*\(\s*", " (", text)
+    # Collapse multiple spaces into one
+    text = re.sub(r"\s+", " ", text)
+
     return text.strip()
+
+
+# extracts and cleans artist text, removing language tags like (is) and properly spacing the text
+def extract_text(td) -> str:
+    parts = []
+    for elem in td.children:
+        if elem.name == "sup":
+            continue
+        if elem.name == "span" and elem.get_text(strip=True).lower().strip("()").isalpha():
+            continue
+        if elem and hasattr(elem, "get_text"):
+            txt = elem.get_text(strip=True)
+            # If it's just language codes like (it), (de;es), (sr-cyrl)
+            if re.fullmatch(r"\([a-z]{2,}(?:-[a-z]+)?(?:;[a-z]{2,}(?:-[a-z]+)?)*\)", txt, flags=re.IGNORECASE):
+                continue
+            parts.append(txt)
+        elif isinstance(elem, str):
+            parts.append(elem.strip())
+
+    text = " ".join(p for p in parts if p)
+    return clean_text(text.strip())

@@ -8,10 +8,10 @@ import time
 load_dotenv()
 user_agent: str = os.getenv("USER_AGENT")
 header = {"User-Agent": f"ESCDataRetrieval/1.0 {user_agent}"}
-table = "esc_real_scores"
+table = "esc_entries"
 country_ids = fetch_country_ids()
 
-for year in range(2021, 2022):
+for year in range(2000, 2004):
     try:
         response = populate(year, table, header, country_ids)
         print(response)
