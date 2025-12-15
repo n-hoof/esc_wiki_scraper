@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
+import re
 
 def get_esc_participants_by_year(year: int, user_header: dict) -> list:
     url = f"https://en.wikipedia.org/api/rest_v1/page/html/Eurovision_Song_Contest_{year}"
@@ -35,7 +36,7 @@ def get_esc_participants_by_year(year: int, user_header: dict) -> list:
                 country = th.get_text(strip=True)
                 artist = tds[1].get_text(strip=True)
                 song = tds[2].get_text(strip=True)
-                rows.append({"country": country, "year": year, "artist": artist, "song_title": song})
+                rows.append({"country": country, "year": year, "artist": artist, "song_title": song.replace('"', '')})
 
         return rows
 
@@ -99,16 +100,13 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            tele = tds[3].get_text(strip=True)
-            tele = int(tele) if tele.isnumeric() else None
+            tele = clean_num(tds[3].get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": False, "televote": tele, "place": place, "running_order": run_order})
 
@@ -116,16 +114,13 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            tele = tds[3].get_text(strip=True)
-            tele = int(tele) if tele.isnumeric() else None
+            tele = clean_num(tds[3].get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": False, "televote": tele, "place": place, "running_order": run_order})
 
@@ -133,13 +128,11 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": True, "running_order": run_order, "place": place})
 
@@ -151,13 +144,11 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
                 th = th[0]
             tds = tr.find_all("td")
 
-            country = th.get_text(strip=True)
+            country = clean_text(th.get_text(strip=True))
             
-            jury = tds[1].get_text(strip=True)
-            jury = int(jury) if jury.isnumeric() else None
+            jury = clean_num(tds[1].get_text(strip=True))
 
-            tele = tds[2].get_text(strip=True)
-            tele = int(tele) if tele.isnumeric() else None
+            tele = clean_num(tds[2].get_text(strip=True))
 
             scoring_data[country][-1]["jury"] = jury
             scoring_data[country][-1]["televote"] = tele
@@ -192,13 +183,11 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
 
@@ -206,24 +195,24 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
-
+        
         for tr in semi_1_score.find_all("tr")[3:]:
             tds = tr.find_all("td")
 
-            country_jury = tds[2].get_text(strip=True)
-            jury = tds[3].get_text(strip=True)
+            country_jury = clean_text(tds[2].get_text(strip=True))
 
-            country_tele = tds[4].get_text(strip=True)
-            tele = tds[5].get_text(strip=True)
+            jury = clean_num(tds[3].get_text(strip=True))
+
+            country_tele = clean_text(tds[4].get_text(strip=True))
+
+            tele = clean_num(tds[5].get_text(strip=True))
 
             scoring_data[country_jury][0]["jury"] = jury
             scoring_data[country_tele][0]["televote"] = tele
@@ -231,11 +220,13 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
         for tr in semi_2_score.find_all("tr")[3:]:
             tds = tr.find_all("td")
 
-            country_jury = tds[2].get_text(strip=True)
-            jury = tds[3].get_text(strip=True)
+            country_jury = clean_text(tds[2].get_text(strip=True))
 
-            country_tele = tds[4].get_text(strip=True)
-            tele = tds[5].get_text(strip=True)
+            jury = clean_num(tds[3].get_text(strip=True))   
+
+            country_tele = clean_text(tds[4].get_text(strip=True))
+
+            tele = clean_num(tds[5].get_text(strip=True))
 
             scoring_data[country_jury][0]["jury"] = jury
             scoring_data[country_tele][0]["televote"] = tele
@@ -244,24 +235,24 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
             th = tr.find("th")
             tds = tr.find_all("td")
 
-            run_order = th.get_text(strip=True)
-            run_order = int(run_order) if run_order.isnumeric() else None
+            run_order = clean_num(th.get_text(strip=True))
 
-            country = tds[0].get_text(strip=True)
+            country = clean_text(tds[0].get_text(strip=True))
 
-            place = tds[4].get_text(strip=True)
-            place = int(place) if place.isnumeric() else None
+            place = clean_num(tds[4].get_text(strip=True))
 
             scoring_data[country].append({"is_final": True, "place": place, "running_order": run_order})
 
         for tr in final_score.find_all("tr")[3:]:
             tds = tr.find_all("td")
 
-            country_jury = tds[2].get_text(strip=True)
-            jury = tds[3].get_text(strip=True)
+            country_jury = clean_text(tds[2].get_text(strip=True))
 
-            country_tele = tds[4].get_text(strip=True)
-            tele = tds[5].get_text(strip=True)
+            jury = clean_num(tds[3].get_text(strip=True))
+
+            country_tele = clean_text(tds[4].get_text(strip=True))
+
+            tele = clean_num(tds[5].get_text(strip=True))
 
             scoring_data[country_jury][-1]["jury"] = jury
             scoring_data[country_tele][-1]["televote"] = tele
@@ -270,8 +261,7 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
         
 
     except Exception as e:
-        print(f"Scoring data retrieval failed for {year}.")
-        return e
+        raise ValueError(f"Scoring data retrieval failed for {year}.\n{e}")
 
 
 def find_table_pre_2024(table_caption: str, soup: BeautifulSoup):
@@ -282,3 +272,13 @@ def find_table_pre_2024(table_caption: str, soup: BeautifulSoup):
             return table
     
     raise ValueError(f"{table_caption} TABLE NOT FOUND")
+
+def clean_num(text: str) -> int | None:
+    # Remove footnotes like [h], [a], etc.
+    text = re.sub(r"\[[^\]]*\]", "", text)
+    text = text.strip()
+    return int(text) if text.isnumeric() else None
+
+def clean_text(text: str) -> str:
+    text = re.sub(r"\[[^\]]*\]", "", text)  # remove [h], [a], etc.
+    return text.strip()
