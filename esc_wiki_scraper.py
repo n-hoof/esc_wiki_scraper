@@ -107,7 +107,7 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": False, "televote": tele, "place": place, "running_order": run_order})
+            scoring_data[country].append({"round": 1, "televote": tele, "place": place, "running_order": run_order})
 
         for tr in semi_2.find_all("tr")[1:]:
             th = tr.find("th")
@@ -121,7 +121,7 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": False, "televote": tele, "place": place, "running_order": run_order})
+            scoring_data[country].append({"round": 2, "televote": tele, "place": place, "running_order": run_order})
 
         for tr in final_ro_place.find_all("tr")[1:]:
             th = tr.find("th")
@@ -133,7 +133,7 @@ def get_esc_scores_by_year_2023_2025(year: int, user_header: dict) -> dict:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": True, "running_order": run_order, "place": place})
+            scoring_data[country].append({"round": 3, "running_order": run_order, "place": place})
 
         for tr in final_score.find_all("tr")[3:]:
             th = tr.find_all("th")
@@ -188,7 +188,7 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
+            scoring_data[country].append({"round": 1, "place": place, "running_order": run_order})
 
         for tr in semi_2_ro_place.find_all("tr")[2:]:
             th = tr.find("th")
@@ -200,7 +200,7 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": False, "place": place, "running_order": run_order})
+            scoring_data[country].append({"round": 2, "place": place, "running_order": run_order})
         
         for tr in semi_1_score.find_all("tr")[3:]:
             tds = tr.find_all("td")
@@ -240,7 +240,7 @@ def get_esc_scores_by_year_2010_2022(year: int, user_header: dict) -> list:
 
             place = clean_num(tds[4].get_text(strip=True))
 
-            scoring_data[country].append({"is_final": True, "place": place, "running_order": run_order})
+            scoring_data[country].append({"round": 3, "place": place, "running_order": run_order})
 
         for tr in final_score.find_all("tr")[3:]:
             tds = tr.find_all("td")
@@ -295,8 +295,6 @@ def extract_text(td) -> str:
     parts = []
     for elem in td.children:
         if elem.name == "sup":
-            continue
-        if elem.name == "span" and elem.get_text(strip=True).lower().strip("()").isalpha():
             continue
         if elem and hasattr(elem, "get_text"):
             txt = elem.get_text(strip=True)
